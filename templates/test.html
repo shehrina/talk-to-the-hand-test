@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ASLing - Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #D1C7BD;
+        font-family: sans-serif;
+      }
+
+      /* A flexible row containing two "boxes" side by side */
+      .row {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+        margin-top: 40px;
+      }
+
+      /* The box on the left, showing the target letter + timer */
+      .letter-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 540px; /* Matches camera height */
+      }
+
+      .letter-box {
+        width: 720px;
+        height: 380px; /* Reduced from 400px to give more room for the timer */
+        background: #fff;
+        border: 2px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 150px;
+        margin-bottom: 10px;
+      }
+
+      /* Timer box underneath the letter */
+      .timer-box {
+        width: 720px;
+        height: 160px; /* Increased from 140px for a bit more space */
+        background: #f5f5dc; /* Beige color */
+        border: 2px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        color: #333;
+      }
+
+      /* The box on the right, showing the camera feed */
+      .camera-box img {
+        border: 2px solid #ccc;
+        width: 720px;
+        height: 540px;
+        object-fit: cover;
+      }
+
+      /* A separate row for the status message */
+      .status-row {
+        margin-top: 20px;
+        text-align: center;
+      }
+      .status-text {
+        font-size: 1.8rem;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <!-- LEFT: Letter box + Timer box -->
+      <div class="letter-container">
+        <!-- Target letter box -->
+        <div class="letter-box" id="targetLetter">
+          {{ target_letter }}
+        </div>
+
+        <!-- Timer box -->
+        <div class="timer-box" id="timerBox">
+          10
+        </div>
+      </div>
+
+      <!-- RIGHT: The camera feed -->
+      <div class="camera-box">
+        <img src="{{ url_for('video_feed') }}" alt="Video feed not available">
+      </div>
+    </div>
+
+    <!-- Status message row -->
+    <div class="status-row">
+      <div class="status-text" id="statusText">Loading...</div>
+    </div>
+
+    <!-- Timer and Status Polling Script -->
+    <script>
+      let timerValue = 10;
+      const timerBox = document.getElementById('timerBox');
+      const statusTextEl = document.getElementById('statusText');
+      let timerInterval = null;
+
+      function startTimer() {
+        timerInterval = setInterval(() => {
+          if (timerValue > 0) {
+            timerValue -= 1;
+            timerBox.textContent = timerValue;
+          } else {
+            // Time's up. If not correct, mark wrong
+            clearInterval(timerInterval);
+            timerBox.textContent = "Time's up!";
+            // If the user never got "Correct!", let's call mark_wrong
+            if (statusTextEl.textContent !== "Correct!") {
+              window.location = "/mark_wrong";
+            }
+          }
+        }, 1000);
+      }
+
+      window.onload = startTimer;
+
+      // Poll /recognition_status every second
+      setInterval(fetchStatus, 1000);
+
+      async function fetchStatus() {
+        try {
+          const response = await fetch('/recognition_status');
+          if (!response.ok) throw new Error('Network error');
+          const data = await response.json();
+          statusTextEl.textContent = data.status_text;
+
+          // If the user is correct (and time hasn't run out), mark correct
+          if (data.status_text === "Correct!" && timerValue > 0) {
+            clearInterval(timerInterval);
+            // Immediately go to mark_correct route
+            window.location = "/mark_correct";
+          }
+
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    </script>
+  </body>
+</html>

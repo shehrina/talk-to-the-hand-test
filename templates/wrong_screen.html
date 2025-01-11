@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wrong!</title>
+    <!-- Wait 1 second, then go to /test -->
+    <meta http-equiv="refresh" content="1;url={{ url_for('test_page') }}">
+    <style>
+      body {
+        margin: 0;
+        background: #f00;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: sans-serif;
+      }
+      h1 {
+        font-size: 4rem;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Wrong!</h1>
+  </body>
+</html>

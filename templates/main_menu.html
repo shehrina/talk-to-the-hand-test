@@ -1,0 +1,48 @@
+<!-- templates/main_menu.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ASLing - Main Menu</title>
+    <style>
+      body {
+        margin: 0;
+        background: #222;
+        color: #eee;
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      h1 {
+        margin-bottom: 40px;
+        font-size: 2rem;
+      }
+      .btn-container {
+        display: flex;
+        gap: 20px;
+      }
+      a.button {
+        background-color: #555;
+        color: #fff;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        font-size: 1.1rem;
+      }
+      a.button:hover {
+        background-color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to ASLing</h1>
+    <div class="btn-container">
+      <a href="{{ url_for('train_page') }}" class="button">Train</a>
+      <a href="{{ url_for('test_page') }}" class="button">Test</a>
+    </div>
+  </body>
+</html>
