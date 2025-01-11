@@ -1,47 +1,47 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Final Score</title>
     <style>
-      body {
-        margin: 0;
-        background: #333;
-        color: #fff;
-        font-family: sans-serif;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
-      h1 {
-        font-size: 3rem;
-        margin-bottom: 20px;
-      }
-      .score {
-        font-size: 2rem;
-        margin-bottom: 40px;
-      }
-      .button {
-        background: #555;
-        color: #fff;
-        text-decoration: none;
-        padding: 15px 30px;
-        border-radius: 8px;
-        font-weight: bold;
-        transition: background-color 0.3s;
-        font-size: 1.1rem;
-        margin: 10px;
-      }
-      .button:hover {
-        background-color: #777;
-      }
+        body {
+            margin: 0;
+            background: #333;
+            color: #fff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .score {
+            font-size: 2rem;
+            margin-bottom: 40px;
+        }
+        .button {
+            background: #555;
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            font-size: 1.1rem;
+            margin: 10px;
+        }
+        .button:hover {
+            background-color: #777;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Final Score</h1>
     <div class="score">You scored {{ score }} / {{ total }}</div>
     <a href="{{ url_for('main_menu') }}" class="button">Main Menu</a>
     <a href="{{ url_for('test_page') }}" class="button">Play Again</a>
-  </body>
+</body>
 </html>
