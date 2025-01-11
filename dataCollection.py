@@ -10,7 +10,7 @@ detector = HandDetector(maxHands=1)
 offset = 20
 imgsize = 224
 
-folder = "Data/A"  # <-- change this to the folder/class you want to collect
+folder = "Data/F"  # <-- change this to the folder/class you want to collect
 counter = 0
 
 while True:
