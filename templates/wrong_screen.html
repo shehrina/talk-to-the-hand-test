@@ -2,12 +2,12 @@
 <html>
   <head>
     <title>Wrong!</title>
-    <!-- Wait 1 second, then go to /test -->
+    <!-- After 1 second, automatically go to /test -->
     <meta http-equiv="refresh" content="1;url={{ url_for('test_page') }}">
     <style>
       body {
         margin: 0;
-        background: #f00;
+        background: #f00; /* bright red */
         display: flex;
         justify-content: center;
         align-items: center;
