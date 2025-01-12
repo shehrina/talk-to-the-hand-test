@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ASLing - Guess The Sign</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #333;
+        color: #fff;
+        font-family: sans-serif;
+        text-align: center;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 50px;
+      }
+      .sign-panel {
+        margin-right: 40px;
+      }
+      .letter-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #fff;
+      }
+      .letter-box {
+        width: 400px;
+        height: 400px;
+        background: #222;
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .letter-box img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .guess-panel input {
+        font-size: 1.5rem;
+        padding: 10px;
+        width: 80px; /* Force single character input to be big enough */
+        text-align: center;
+        text-transform: uppercase; /* Auto-show uppercase */
+      }
+      .button {
+        background-color: #555;
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        font-size: 1.1rem;
+      }
+      .button:hover {
+        background-color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ASLing - Guess The Sign</h1>
+    <div class="container">
+      <!-- Left side: Random sign image -->
+      <div class="sign-panel">
+        <div class="letter-title">What's this sign?</div>
+        <div class="letter-box">
+          <img src="{{ url_for('custom_images', filename=guess_sign_letter + '.png') }}" alt="Sign to guess" />
+        </div>
+        <a href="{{ url_for('main_menu') }}" class="button">Main Menu</a>
+      </div>
+
+      <!-- Right side: Form for user guess -->
+      <div class="guess-panel">
+        <form action="{{ url_for('guess_sign_check') }}" method="POST">
+          <label for="guessInput" style="font-size:1.2rem;">Your Guess:</label><br><br>
+          <input
+            type="text"
+            id="guessInput"
+            name="guess"
+            maxlength="1"
+            required
+            autofocus
+          >
+          <br><br>
+          <button type="submit" class="button">Check</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

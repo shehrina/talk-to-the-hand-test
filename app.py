@@ -4,7 +4,7 @@ import numpy as np
 import random
 import os
 
-from flask import Flask, render_template, Response, jsonify, redirect, url_for, send_from_directory
+from flask import Flask, render_template, Response, jsonify, redirect, url_for, send_from_directory, request
 from tensorflow.keras.models import load_model
 from cvzone.HandTrackingModule import HandDetector
 
@@ -53,7 +53,7 @@ recognized_letter = None
 status_text = "Loading..."
 
 # -------------------------------------------------------
-# 3) NEW: Train Mode Variables
+# 3) Train Mode Variables
 # -------------------------------------------------------
 train_letter = None     # Current letter in Train mode
 train_status = "Loading..."
@@ -101,7 +101,6 @@ def predict_label(img, threshold=0.8):
     else:
         return predictions[0], labels[max_index]
 
-
 # -------------------------------------------------------
 # 6) Frame Generator for Test Mode (Unchanged)
 # -------------------------------------------------------
@@ -143,7 +142,7 @@ def gen_frames():
                         imgWhite[:, wGap:wGap + wCal] = imgResize
                     else:
                         scale = imgsize / w
-                        hCal = math.ceil(scale * h)
+                        hCal = math.ceil(scale * w)
                         imgResize = cv2.resize(imgCrop, (imgsize, hCal))
                         hGap = math.ceil((imgsize - hCal) / 2)
                         imgWhite[hGap:hGap + hCal, :] = imgResize
@@ -168,7 +167,7 @@ def gen_frames():
 
 
 # -------------------------------------------------------
-# 7) NEW: Frame Generator for Train Mode (No Timer)
+# 7) Frame Generator for Train Mode (No Timer)
 # -------------------------------------------------------
 def gen_train_frames():
     """
@@ -217,7 +216,7 @@ def gen_train_frames():
                         imgWhite[:, wGap:wGap + wCal] = imgResize
                     else:
                         scale = imgsize / w
-                        hCal = math.ceil(scale * h)
+                        hCal = math.ceil(scale * w)
                         imgResize = cv2.resize(imgCrop, (imgsize, hCal))
                         hGap = math.ceil((imgsize - hCal) / 2)
                         imgWhite[hGap:hGap + hCal, :] = imgResize
@@ -248,13 +247,12 @@ def gen_train_frames():
 
 
 # -------------------------------------------------------
-# 8) NEW: Serve Images from "Images/" folder
+# 8) Serve Images from "Images/" folder
 # -------------------------------------------------------
 @app.route('/Images/<path:filename>')
 def custom_images(filename):
     """
-    If your images are in a folder named "Images" at the same level as app.py,
-    this route serves them.
+    Serves images from the 'Images' folder.
     Example: /Images/A.png => Images/A.png
     """
     return send_from_directory('Images', filename)
@@ -316,7 +314,7 @@ def recognition_status():
 
 
 # -------------------------------------------------------
-# 10) NEW: TRAIN MODE ROUTES
+# 10) TRAIN MODE ROUTES
 # -------------------------------------------------------
 @app.route('/train')
 def train_page():
@@ -348,7 +346,60 @@ def train_video_feed():
 
 
 # -------------------------------------------------------
-# 11) MAIN
+# 11) "Guess The Sign" Feature
+# -------------------------------------------------------
+# NEW: "Guess The Sign" Variables
+guess_sign_letter = None
+
+@app.route('/guess_sign')
+def guess_sign():
+    """
+    Renders the Guess The Sign page and picks a new random letter.
+    """
+    global guess_sign_letter
+    guess_sign_letter = pick_new_letter()  # reuse your pick_new_letter() function
+    return render_template('guess_sign.html', guess_sign_letter=guess_sign_letter)
+
+@app.route('/guess_sign_check', methods=['POST'])
+def guess_sign_check():
+    """
+    Handles form submission from the guess_sign.html page.
+    Compares user guess with the current letter (in uppercase).
+    """
+    global guess_sign_letter
+    user_guess = request.form.get('guess')
+    if not user_guess:
+        return redirect(url_for('guess_sign'))  # no guess provided, just reload
+
+    # Convert guess to uppercase
+    user_guess = user_guess.strip().upper()
+
+    if user_guess == guess_sign_letter:
+        # Redirect to "Guess The Sign" Correct screen
+        return redirect(url_for('guess_sign_correct'))
+    else:
+        # Redirect to "Guess The Sign" Wrong screen
+        return redirect(url_for('guess_sign_wrong'))
+
+@app.route('/guess_sign_correct')
+def guess_sign_correct():
+    """
+    Shows the "Correct!" screen for Guess The Sign,
+    then after 1 second, goes back to /guess_sign.
+    """
+    return render_template('guess_sign_correct.html')
+
+@app.route('/guess_sign_wrong')
+def guess_sign_wrong():
+    """
+    Shows the "Wrong!" screen for Guess The Sign,
+    then after 1 second, goes back to /guess_sign.
+    """
+    return render_template('guess_sign_wrong.html')
+
+
+# -------------------------------------------------------
+# 12) MAIN
 # -------------------------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)

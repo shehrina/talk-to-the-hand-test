@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wrong!</title>
+    <!-- After 1 second, automatically go back to /guess_sign -->
+    <meta http-equiv="refresh" content="1;url={{ url_for('guess_sign') }}">
+    <style>
+      body {
+        margin: 0;
+        background: #f00; /* bright red */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: sans-serif;
+      }
+      h1 {
+        font-size: 4rem;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Wrong!</h1>
+  </body>
+</html>

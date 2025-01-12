@@ -15,10 +15,6 @@
         height: 100vh;
         text-align: center;
       }
-      h1 {
-        margin-bottom: 20px;
-        font-size: 2rem;
-      }
       .mascot {
         width: auto; /* Adjust mascot size */
         height: auto;
@@ -53,8 +49,7 @@
   </head>
   <body>
     <!-- Mascot Image -->
-    <img class="mascot" src="/templates/Mascot/mascot.png" alt="Mascot">
-
+    <img class="mascot" src="{{ url_for('custom_images', filename='mascot.png') }}" alt="Mascot">
 
     <!-- Welcome Message -->
     <div class="welcome">Welcome to Talk To The Hand</div>
@@ -63,6 +58,8 @@
     <div class="btn-container">
       <a href="{{ url_for('train_page') }}" class="button">Train</a>
       <a href="{{ url_for('test_page') }}" class="button">Test</a>
+      <!-- NEW BUTTON -->
+      <a href="{{ url_for('guess_sign') }}" class="button">Guess The Sign</a>
     </div>
   </body>
 </html>
