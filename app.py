@@ -2,8 +2,9 @@ import cv2
 import math
 import numpy as np
 import random
+import os
 
-from flask import Flask, render_template, Response, jsonify, redirect, url_for
+from flask import Flask, render_template, Response, jsonify, redirect, url_for, send_from_directory
 from tensorflow.keras.models import load_model
 from cvzone.HandTrackingModule import HandDetector
 
@@ -41,36 +42,41 @@ with open("Model/labels.txt", "r") as f:
             labels.append(label_converted)
 
 # -------------------------------------------------------
-# 2) Game Variables
+# 2) Game Variables (Test Mode)
 # -------------------------------------------------------
 TOTAL_ROUNDS = 10
 attempt_count = 0
 correct_count = 0
 
-target_letter = None
+target_letter = None   # Used in Test mode
 recognized_letter = None
 status_text = "Loading..."
 
 # -------------------------------------------------------
-# 3) Hand Detector and Webcam
+# 3) NEW: Train Mode Variables
+# -------------------------------------------------------
+train_letter = None     # Current letter in Train mode
+train_status = "Loading..."
+# We'll color the bounding box red if wrong, green if correct
+train_border_color = (0, 0, 255)  # default red
+
+# -------------------------------------------------------
+# 4) Hand Detector and Webcam
 # -------------------------------------------------------
 detector = HandDetector(maxHands=1)
 offset = 20
 imgsize = 224
 
 cap = cv2.VideoCapture(0)
-# Lower resolution to reduce lag
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-# Attempt to set FPS (some webcams ignore this)
 cap.set(cv2.CAP_PROP_FPS, 30)
 
-# We’ll skip frames to reduce load
 FRAME_SKIP = 2
 frame_counter = 0
 
 # -------------------------------------------------------
-# 4) Utility Functions
+# 5) Utility Functions
 # -------------------------------------------------------
 def reset_game():
     global attempt_count, correct_count
@@ -81,9 +87,6 @@ def pick_new_letter():
     return random.choice(labels)
 
 def predict_label(img, threshold=0.8):
-    """
-    Run inference on the image, return 'Unrecognized' if below threshold.
-    """
     img_resized = cv2.resize(img, (224, 224))
     img_resized = img_resized.astype('float32') / 255.0
     img_resized = np.expand_dims(img_resized, axis=0)
@@ -98,8 +101,9 @@ def predict_label(img, threshold=0.8):
     else:
         return predictions[0], labels[max_index]
 
+
 # -------------------------------------------------------
-# 5) Frame Generator for MJPEG
+# 6) Frame Generator for Test Mode (Unchanged)
 # -------------------------------------------------------
 def gen_frames():
     global recognized_letter, status_text, target_letter
@@ -110,12 +114,10 @@ def gen_frames():
         if not success:
             break
 
-        # If skipping frames, only do detection/inference every FRAME_SKIP frames
         frame_counter += 1
         do_inference = (frame_counter % FRAME_SKIP == 0)
 
         if do_inference:
-            # Make a copy for detection (hand tracking can flip or process differently)
             imgRGB = img.copy()
             hands, _ = detector.findHands(imgRGB, flipType=False)
 
@@ -123,11 +125,8 @@ def gen_frames():
             if hands:
                 hand = hands[0]
                 x, y, w, h = hand['bbox']
-
-                # Draw bounding box
                 cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 255), 4)
 
-                # Crop and prepare for classification
                 y1, y2 = max(0, y - offset), min(img.shape[0], y + h + offset)
                 x1, x2 = max(0, x - offset), min(img.shape[1], x + w + offset)
                 imgCrop = imgRGB[y1:y2, x1:x2]
@@ -149,11 +148,9 @@ def gen_frames():
                         hGap = math.ceil((imgsize - hCal) / 2)
                         imgWhite[hGap:hGap + hCal, :] = imgResize
 
-                    # Predict
                     _, pred_label = predict_label(imgWhite, threshold=0.8)
                     recognized_letter = pred_label
 
-            # Update status
             if recognized_letter == "Unrecognized":
                 status_text = "Unrecognized sign"
             elif recognized_letter == target_letter:
@@ -161,7 +158,6 @@ def gen_frames():
             else:
                 status_text = "Try again"
 
-        # Convert frame to JPEG
         ret, buffer = cv2.imencode('.jpg', img)
         if not ret:
             break
@@ -172,7 +168,100 @@ def gen_frames():
 
 
 # -------------------------------------------------------
-# 6) Flask Routes
+# 7) NEW: Frame Generator for Train Mode (No Timer)
+# -------------------------------------------------------
+def gen_train_frames():
+    """
+    This mode:
+      - No timer
+      - Shows the letter as an image (via train.html)
+      - Red bounding box if incorrect, Green if correct
+      - If correct, pick a new letter immediately
+    """
+    global train_letter, train_border_color
+    global frame_counter
+
+    while True:
+        success, img = cap.read()
+        if not success:
+            break
+
+        frame_counter += 1
+        do_inference = (frame_counter % FRAME_SKIP == 0)
+
+        # Default color is red
+        border_color = (0, 0, 255)
+
+        if do_inference:
+            imgRGB = img.copy()
+            hands, _ = detector.findHands(imgRGB, flipType=False)
+
+            recognized_sign = None
+            if hands:
+                hand = hands[0]
+                x, y, w, h = hand['bbox']
+
+                y1, y2 = max(0, y - offset), min(img.shape[0], y + h + offset)
+                x1, x2 = max(0, x - offset), min(img.shape[1], x + w + offset)
+                imgCrop = imgRGB[y1:y2, x1:x2]
+
+                if imgCrop.size != 0:
+                    imgWhite = np.ones((imgsize, imgsize, 3), dtype=np.uint8) * 255
+                    aspectRatio = h / w
+
+                    if aspectRatio > 1:
+                        scale = imgsize / h
+                        wCal = math.ceil(scale * w)
+                        imgResize = cv2.resize(imgCrop, (wCal, imgsize))
+                        wGap = math.ceil((imgsize - wCal) / 2)
+                        imgWhite[:, wGap:wGap + wCal] = imgResize
+                    else:
+                        scale = imgsize / w
+                        hCal = math.ceil(scale * h)
+                        imgResize = cv2.resize(imgCrop, (imgsize, hCal))
+                        hGap = math.ceil((imgsize - hCal) / 2)
+                        imgWhite[hGap:hGap + hCal, :] = imgResize
+
+                    _, pred_label = predict_label(imgWhite, threshold=0.8)
+                    recognized_sign = pred_label
+
+                # Decide bounding box color
+                if recognized_sign == train_letter:
+                    border_color = (0, 255, 0)  # green
+                    # Immediately pick new letter
+                    train_letter = pick_new_letter()
+                else:
+                    border_color = (0, 0, 255)  # red
+
+            # Draw bounding box if we found a hand
+            if hands:
+                x, y, w, h = hands[0]['bbox']
+                cv2.rectangle(img, (x, y), (x + w, y + h), border_color, 4)
+
+        ret, buffer = cv2.imencode('.jpg', img)
+        if not ret:
+            break
+        frame = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+# -------------------------------------------------------
+# 8) NEW: Serve Images from "Images/" folder
+# -------------------------------------------------------
+@app.route('/Images/<path:filename>')
+def custom_images(filename):
+    """
+    If your images are in a folder named "Images" at the same level as app.py,
+    this route serves them.
+    Example: /Images/A.png => Images/A.png
+    """
+    return send_from_directory('Images', filename)
+
+
+# -------------------------------------------------------
+# 9) FLASK ROUTES (TEST MODE) - Unchanged
 # -------------------------------------------------------
 @app.route('/')
 def main_menu():
@@ -225,5 +314,41 @@ def video_feed():
 def recognition_status():
     return jsonify({'status_text': status_text})
 
+
+# -------------------------------------------------------
+# 10) NEW: TRAIN MODE ROUTES
+# -------------------------------------------------------
+@app.route('/train')
+def train_page():
+    """
+    Train page:
+      - Sets a random letter
+      - Renders train.html
+    """
+    global train_letter
+    train_letter = pick_new_letter()  # pick an initial letter
+    return render_template('train.html')
+
+@app.route('/train_letter')
+def train_letter_api():
+    """
+    Returns the current train_letter in JSON form,
+    so the front-end can update the displayed letter image every second.
+    """
+    global train_letter
+    return jsonify({'letter': train_letter})
+
+@app.route('/train_video_feed')
+def train_video_feed():
+    """
+    MJPEG feed specifically for Train mode, uses gen_train_frames().
+    """
+    return Response(gen_train_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+# -------------------------------------------------------
+# 11) MAIN
+# -------------------------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)

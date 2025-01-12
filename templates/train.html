@@ -1,4 +1,3 @@
-<!-- templates/train.html -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -6,42 +5,101 @@
     <style>
       body {
         margin: 0;
+        padding: 0;
         background: #333;
         color: #fff;
-        text-align: center;
         font-family: sans-serif;
+        text-align: center;
       }
-      #video-container {
-        margin: 20px auto;
-        max-width: 800px;
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 50px;
       }
-      .nav {
-        margin-top: 20px;
+      .left-panel {
+        margin-right: 40px;
       }
-      .nav a {
+      .letter-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #fff;
+      }
+      .letter-box {
+        width: 400px;
+        height: 400px;
+        background: #222;
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .letter-box img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .camera-box img {
+        width: 640px;
+        height: 480px;
+        border: 4px solid #555;
+        object-fit: cover;
+      }
+      .button {
+        background-color: #555;
         color: #fff;
         text-decoration: none;
-        padding: 8px 15px;
-        background: #555;
-        border-radius: 5px;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        font-size: 1.1rem;
       }
-      .nav a:hover {
-        background: #777;
-      }
-      h1 {
-        margin-top: 20px;
+      .button:hover {
+        background-color: #777;
       }
     </style>
   </head>
   <body>
-    <h1>ASL Training</h1>
-    <p>This page is a placeholder for training logic or data collection features.</p>
-    <div class="nav">
-      <a href="{{ url_for('main_menu') }}">Return to Main Menu</a>
+    <h1>ASLing - Train Mode</h1>
+    <div class="container">
+      <!-- LEFT SIDE: Current letter and image -->
+      <div class="left-panel">
+        <div class="letter-title" id="currentLetter">A</div> <!-- Placeholder -->
+        <div class="letter-box">
+          <img id="letterImage" src="" alt="Letter to sign">
+        </div>
+        <a href="{{ url_for('main_menu') }}" class="button">Back to Main Menu</a>
+      </div>
+
+      <!-- RIGHT SIDE: Camera Feed -->
+      <div class="camera-box">
+        <img src="{{ url_for('train_video_feed') }}" alt="Train video feed">
+      </div>
     </div>
-    <div id="video-container">
-      <!-- You can add your data collection or training instructions here -->
-      <p>Stay tuned for training improvements!</p>
-    </div>
+
+    <script>
+      // We'll fetch the train_letter every second and update the image and letter title
+      async function fetchTrainLetter() {
+        try {
+          const response = await fetch('/train_letter');
+          if (!response.ok) throw new Error('Network response was not ok');
+          const data = await response.json();
+          const letter = data.letter;
+
+          // Update the image
+          document.getElementById('letterImage').src = "/Images/" + letter + ".png";
+          // Update the letter title
+          document.getElementById('currentLetter').textContent = letter;
+        } catch (error) {
+          console.error("Error fetching train letter:", error);
+        }
+      }
+
+      // Fetch immediately, then poll every 1s
+      fetchTrainLetter();
+      setInterval(fetchTrainLetter, 1000);
+    </script>
   </body>
 </html>

@@ -40,7 +40,8 @@
   <body>
     <h1>Welcome to ASLing</h1>
     <div class="btn-container">
-      <a href="{{ url_for('test_page') }}" class="button">Train</a>
+      <!-- Test and Train now separate routes -->
+      <a href="{{ url_for('train_page') }}" class="button">Train</a>
       <a href="{{ url_for('test_page') }}" class="button">Test</a>
     </div>
   </body>
