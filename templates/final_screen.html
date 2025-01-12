@@ -1,47 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Final Score</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
+        /* -------------------------------------------------------
+           Reset and Base Styles
+        ------------------------------------------------------- */
+        * {
+            box-sizing: border-box;
             margin: 0;
-            background: #333;
-            color: #fff;
-            font-family: sans-serif;
+            padding: 0;
+        }
+
+        body {
+            background-color: #2A3043; /* Updated to match test.html */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff; /* White text for contrast */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
         }
+
+        /* -------------------------------------------------------
+           Container Styles
+        ------------------------------------------------------- */
+        .container {
+            background-color: #ffffff; /* White background for content */
+            color: #2A3043; /* Dark text for readability */
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* -------------------------------------------------------
+           Typography Styles
+        ------------------------------------------------------- */
         h1 {
             font-size: 3rem;
             margin-bottom: 20px;
+            color: #2A3043;
         }
+
         .score {
             font-size: 2rem;
             margin-bottom: 40px;
         }
+
+        /* -------------------------------------------------------
+           Button Styles
+        ------------------------------------------------------- */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
         .button {
-            background: #555;
-            color: #fff;
+            background-color: #2A3043; /* Dark background to match theme */
+            color: #ffffff;
             text-decoration: none;
             padding: 15px 30px;
             border-radius: 8px;
             font-weight: bold;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
             font-size: 1.1rem;
-            margin: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .button:hover {
-            background-color: #777;
+            background-color: #44506b; /* Lighter shade on hover */
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .score {
+                font-size: 1.5rem;
+            }
+
+            .button {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Final Score</h1>
-    <div class="score">You scored {{ score }} / {{ total }}</div>
-    <a href="{{ url_for('main_menu') }}" class="button">Main Menu</a>
-    <a href="{{ url_for('play_again') }}" class="button">Play Again</a>
+    <div class="container" role="main" aria-labelledby="finalScoreHeading">
+        <!-- Final Score Heading -->
+        <h1 id="finalScoreHeading">Final Score</h1>
+
+        <!-- Score Display -->
+        <div class="score" aria-live="polite">You scored {{ score }} / {{ total }}</div>
+
+        <!-- Buttons for Navigation -->
+        <div class="button-container">
+            <a href="{{ url_for('main_menu') }}" class="button" aria-label="Go to Main Menu">Main Menu</a>
+            <a href="{{ url_for('play_again') }}" class="button" aria-label="Play Again">Play Again</a>
+        </div>
+    </div>
 </body>
 </html>

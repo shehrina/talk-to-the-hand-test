@@ -1,105 +1,254 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ASLing - Train</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ASLing - Train Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background: #333;
-        color: #fff;
-        font-family: sans-serif;
-        text-align: center;
-      }
-      .container {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        margin-top: 50px;
-      }
-      .left-panel {
-        margin-right: 40px;
-      }
-      .letter-title {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-        color: #fff;
-      }
-      .letter-box {
-        width: 400px;
-        height: 400px;
-        background: #222;
-        border: 2px solid #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-      }
-      .letter-box img {
-        max-width: 100%;
-        max-height: 100%;
-      }
-      .camera-box img {
-        width: 640px;
-        height: 480px;
-        border: 4px solid #555;
-        object-fit: cover;
-      }
-      .button {
-        background-color: #555;
-        color: #fff;
-        text-decoration: none;
-        padding: 12px 25px;
-        border-radius: 8px;
-        font-weight: bold;
-        transition: background-color 0.3s;
-        font-size: 1.1rem;
-      }
-      .button:hover {
-        background-color: #777;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>ASLing - Train Mode</h1>
-    <div class="container">
-      <!-- LEFT SIDE: Current letter and image -->
-      <div class="left-panel">
-        <div class="letter-title" id="currentLetter">A</div> <!-- Placeholder -->
-        <div class="letter-box">
-          <img id="letterImage" src="" alt="Letter to sign">
-        </div>
-        <a href="{{ url_for('main_menu') }}" class="button">Back to Main Menu</a>
-      </div>
+        /* -------------------------------------------------------
+           Reset and Base Styles
+        ------------------------------------------------------- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-      <!-- RIGHT SIDE: Camera Feed -->
-      <div class="camera-box">
-        <img src="{{ url_for('train_video_feed') }}" alt="Train video feed">
-      </div>
+        body {
+            background-color: #2A3043; /* Dark blue background */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2A3043; /* Dark text for container */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* -------------------------------------------------------
+           Container Styles
+        ------------------------------------------------------- */
+        .container {
+            background-color: #ffffff; /* White background for content */
+            color: #2A3043; /* Dark text for readability */
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* -------------------------------------------------------
+           Header Styles
+        ------------------------------------------------------- */
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 40px;
+            color: #2A3043;
+        }
+
+        /* -------------------------------------------------------
+           Layout Styles
+        ------------------------------------------------------- */
+        .content-row {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: nowrap; /* Prevent stacking */
+        }
+
+        @media (max-width: 768px) {
+            .content-row {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .camera-box {
+                width: 100%;
+                height: auto;
+            }
+
+            .left-panel {
+                width: 100%;
+            }
+        }
+
+        /* -------------------------------------------------------
+           Left Panel Styles
+        ------------------------------------------------------- */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 400px;
+            max-width: 100%;
+        }
+
+        .letter-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2A3043;
+        }
+
+        .letter-box {
+            width: 100%;
+            height: 400px;
+            background-color: #222;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .letter-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        /* -------------------------------------------------------
+           Camera Panel Styles
+        ------------------------------------------------------- */
+        .camera-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 720px;
+            height: 540px; /* Set to match combined height of letter-box and timer-box */
+            max-width: 100%;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .camera-box img {
+            width: 100%;
+            height: 100%; /* Ensure image fills the container vertically */
+            object-fit: cover; /* Adjust image to cover the container without distortion */
+            display: block;
+        }
+
+        /* -------------------------------------------------------
+           Button Styles
+        ------------------------------------------------------- */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            background-color: #2A3043; /* Dark background to match theme */
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            background-color: #44506b; /* Lighter shade on hover */
+            transform: translateY(-2px);
+        }
+
+        /* -------------------------------------------------------
+           Responsive Design
+        ------------------------------------------------------- */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .letter-title {
+                font-size: 1.5rem;
+            }
+
+            .button {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+
+            .camera-box {
+                width: 100%;
+                height: auto;
+            }
+
+            .letter-box {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" role="main" aria-labelledby="trainModeHeading">
+        <!-- Page Header -->
+        <h1 id="trainModeHeading">ASLing - Train Mode</h1>
+
+        <!-- Main Content Row -->
+        <div class="content-row">
+            <!-- Left Side: Current Letter and Image -->
+            <div class="left-panel">
+                <div class="letter-title" id="currentLetter">A</div> <!-- Placeholder -->
+                <div class="letter-box" aria-live="polite">
+                    <img id="letterImage" src="" alt="Letter to sign">
+                </div>
+                <div class="button-container">
+                    <a href="{{ url_for('main_menu') }}" class="button" aria-label="Back to Main Menu">Back to Main Menu</a>
+                </div>
+            </div>
+
+            <!-- Right Side: Camera Feed -->
+            <div class="camera-box" aria-label="Train Video Feed">
+                <img src="{{ url_for('train_video_feed') }}" alt="Live video feed for training">
+            </div>
+        </div>
     </div>
 
     <script>
-      // We'll fetch the train_letter every second and update the image and letter title
-      async function fetchTrainLetter() {
-        try {
-          const response = await fetch('/train_letter');
-          if (!response.ok) throw new Error('Network response was not ok');
-          const data = await response.json();
-          const letter = data.letter;
+        // -------------------------------------------------------
+        // Fetch and Update Current Letter and Image
+        // -------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            /**
+             * Fetches the current train letter from the server and updates the UI.
+             */
+            async function fetchTrainLetter() {
+                try {
+                    const response = await fetch('/train_letter');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    const letter = data.letter;
 
-          // Update the image
-          document.getElementById('letterImage').src = "/Images/" + letter + ".png";
-          // Update the letter title
-          document.getElementById('currentLetter').textContent = letter;
-        } catch (error) {
-          console.error("Error fetching train letter:", error);
-        }
-      }
+                    // Update the image source
+                    const letterImage = document.getElementById('letterImage');
+                    letterImage.src = "/Images/" + letter + ".png";
+                    letterImage.alt = "Sign for letter " + letter;
 
-      // Fetch immediately, then poll every 1s
-      fetchTrainLetter();
-      setInterval(fetchTrainLetter, 1000);
+                    // Update the letter title
+                    const currentLetter = document.getElementById('currentLetter');
+                    currentLetter.textContent = letter;
+                } catch (error) {
+                    console.error("Error fetching train letter:", error);
+                }
+            }
+
+            // Fetch immediately, then poll every 1s
+            fetchTrainLetter();
+            setInterval(fetchTrainLetter, 1000);
+        });
     </script>
-  </body>
+</body>
 </html>

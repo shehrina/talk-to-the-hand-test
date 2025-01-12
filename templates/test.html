@@ -1,95 +1,162 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>ASLing - Test</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background: #2A3043;
-        font-family: sans-serif;
-      }
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ASLing - Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* -------------------------------------------------------
+       Reset and Base Styles
+    ------------------------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
+    body {
+      background-color: #2A3043;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* -------------------------------------------------------
+       Layout Styles
+    ------------------------------------------------------- */
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      gap: 40px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
       .row {
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: center;
-        margin-top: 40px;
-      }
-
-      .letter-container {
-        display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        height: 540px;
-      }
-
-      .letter-box {
-        width: 720px;
-        height: 380px;
-        background: #fff;
-        border: 2px solid #ccc;
-        display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 150px;
-        margin-bottom: 10px;
       }
+    }
 
-      .timer-box {
-        width: 720px;
-        height: 160px;
-        background: #f5f5dc;
-        border: 2px solid #ccc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 50px;
-        color: #333;
-      }
+    .letter-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 720px;
+      max-width: 100%;
+    }
 
-      .camera-box img {
-        border: 2px solid #ccc;
-        width: 720px;
-        height: 540px;
-        object-fit: cover;
-      }
+    .letter-box, .timer-box {
+      width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
 
-      .status-row {
-        margin-top: 20px;
-        text-align: center;
-      }
-      .status-text {
-        font-size: 1.8rem;
-        color: #333;
-      }
-    </style>
-  </head>
-  <body>
+    .letter-box {
+      height: 380px;
+      background-color: #ffffff;
+      font-size: 150px;
+      font-weight: bold;
+      color: #2A3043;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .timer-box {
+      height: 160px;
+      background-color: #f5f5dc;
+      font-size: 50px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .camera-box {
+      width: 720px;
+      height: 540px; /* Set to match combined height of letter-box and timer-box */
+      max-width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .camera-box img {
+      width: 100%;
+      height: 100%; /* Ensure image fills the container vertically */
+      object-fit: cover; /* Adjust image to cover the container without distortion */
+      display: block;
+    }
+
+    .status-row {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .status-text {
+      font-size: 1.8rem;
+      color: #333;
+      min-height: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Main Content Row -->
     <div class="row">
+      <!-- Left Side: Target Letter and Timer -->
       <div class="letter-container">
-        <!-- Left side: the target letter, plus a 10-second timer -->
-        <div class="letter-box" id="targetLetter">{{ target_letter }}</div>
-        <div class="timer-box" id="timerBox">10</div>
+        <section class="letter-box" id="targetLetter" aria-label="Target Letter">
+          {{ target_letter }}
+        </section>
+        <section class="timer-box" id="timerBox" aria-label="Countdown Timer">
+          10
+        </section>
       </div>
 
-      <!-- Right side: the camera feed -->
-      <div class="camera-box">
-        <img src="{{ url_for('video_feed') }}" alt="Video feed not available">
+      <!-- Right Side: Camera Feed -->
+      <div class="camera-box" aria-label="Camera Feed">
+        <img src="{{ url_for('video_feed') }}" alt="Live video feed of your hand gesture">
       </div>
     </div>
 
+    <!-- Status Message -->
     <div class="status-row">
-      <div class="status-text" id="statusText">Loading...</div>
+      <p class="status-text" id="statusText">Loading...</p>
     </div>
+  </div>
 
-    <script>
-      let timerValue = 10;
+  <script>
+    // -------------------------------------------------------
+    // Timer and Recognition Status Handling
+    // -------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
       const timerBox = document.getElementById('timerBox');
       const statusTextEl = document.getElementById('statusText');
+      let timerValue = 10;
       let timerInterval = null;
+      let statusInterval = null;
 
+      /**
+       * Starts the countdown timer.
+       */
       function startTimer() {
         timerInterval = setInterval(() => {
           if (timerValue > 0) {
@@ -98,35 +165,39 @@
           } else {
             clearInterval(timerInterval);
             timerBox.textContent = "Time's up!";
-            // If not correct by this time, go to /mark_wrong
+            // Redirect to wrong mark if not correct by time's up
             if (statusTextEl.textContent !== "Correct!") {
-              window.location = "/mark_wrong";
+              window.location.href = "/mark_wrong";
             }
           }
         }, 1000);
       }
 
-      window.onload = startTimer;
-
-      // Poll /recognition_status every second to see if the sign is "Correct!"
-      setInterval(fetchStatus, 1000);
-
+      /**
+       * Fetches the recognition status from the server.
+       */
       async function fetchStatus() {
         try {
           const response = await fetch('/recognition_status');
-          if (!response.ok) throw new Error('Network error');
+          if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
           statusTextEl.textContent = data.status_text;
 
-          // If correct and time remains, go to /mark_correct
+          // If correct and time remains, redirect to mark_correct
           if (data.status_text === "Correct!" && timerValue > 0) {
             clearInterval(timerInterval);
-            window.location = "/mark_correct";
+            clearInterval(statusInterval);
+            window.location.href = "/mark_correct";
           }
         } catch (error) {
-          console.error(error);
+          console.error('Error fetching recognition status:', error);
         }
       }
-    </script>
-  </body>
+
+      // Initialize Timer and Status Polling
+      startTimer();
+      statusInterval = setInterval(fetchStatus, 1000);
+    });
+  </script>
+</body>
 </html>
