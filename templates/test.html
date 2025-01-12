@@ -69,12 +69,12 @@
   <body>
     <div class="row">
       <div class="letter-container">
-        <!-- Left side: target letter, plus a 10-second timer -->
+        <!-- Left side: the target letter, plus a 10-second timer -->
         <div class="letter-box" id="targetLetter">{{ target_letter }}</div>
         <div class="timer-box" id="timerBox">10</div>
       </div>
 
-      <!-- Right side: camera feed -->
+      <!-- Right side: the camera feed -->
       <div class="camera-box">
         <img src="{{ url_for('video_feed') }}" alt="Video feed not available">
       </div>
@@ -98,8 +98,7 @@
           } else {
             clearInterval(timerInterval);
             timerBox.textContent = "Time's up!";
-
-            // If not correct, go to /mark_wrong
+            // If not correct by this time, go to /mark_wrong
             if (statusTextEl.textContent !== "Correct!") {
               window.location = "/mark_wrong";
             }
@@ -109,7 +108,7 @@
 
       window.onload = startTimer;
 
-      // Poll /recognition_status every second
+      // Poll /recognition_status every second to see if the sign is "Correct!"
       setInterval(fetchStatus, 1000);
 
       async function fetchStatus() {
@@ -117,7 +116,6 @@
           const response = await fetch('/recognition_status');
           if (!response.ok) throw new Error('Network error');
           const data = await response.json();
-
           statusTextEl.textContent = data.status_text;
 
           // If correct and time remains, go to /mark_correct
@@ -125,7 +123,6 @@
             clearInterval(timerInterval);
             window.location = "/mark_correct";
           }
-
         } catch (error) {
           console.error(error);
         }
