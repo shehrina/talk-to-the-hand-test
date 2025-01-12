@@ -5,7 +5,7 @@
     <style>
       body {
         margin: 0;
-        background: #222;
+        background: #2A3043; /* Updated background color */
         color: #eee;
         font-family: sans-serif;
         display: flex;
@@ -13,17 +13,29 @@
         align-items: center;
         justify-content: center;
         height: 100vh;
+        text-align: center;
       }
       h1 {
-        margin-bottom: 40px;
+        margin-bottom: 20px;
         font-size: 2rem;
+      }
+      .mascot {
+        width: auto; /* Adjust mascot size */
+        height: auto;
+        margin-bottom: 20px;
+      }
+      .welcome {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+        color: #eee;
       }
       .btn-container {
         display: flex;
+        flex-direction: column;
         gap: 20px;
       }
       a.button {
-        background-color: #555;
+        background-color: #81A0B9; /* Updated button color */
         color: #fff;
         text-decoration: none;
         padding: 15px 30px;
@@ -31,16 +43,24 @@
         font-weight: bold;
         transition: background-color 0.3s;
         font-size: 1.1rem;
+        width: 200px; /* Button width */
+        text-align: center;
       }
       a.button:hover {
-        background-color: #777;
+        background-color: #6F90A9;
       }
     </style>
   </head>
   <body>
-    <h1>Welcome to ASLing</h1>
+    <!-- Mascot Image -->
+    <img class="mascot" src="/templates/Mascot/mascot.png" alt="Mascot">
+
+
+    <!-- Welcome Message -->
+    <div class="welcome">Welcome to Talk To The Hand</div>
+
+    <!-- Buttons -->
     <div class="btn-container">
-      <!-- Test and Train now separate routes -->
       <a href="{{ url_for('train_page') }}" class="button">Train</a>
       <a href="{{ url_for('test_page') }}" class="button">Test</a>
     </div>
